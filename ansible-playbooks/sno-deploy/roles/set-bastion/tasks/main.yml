@@ -1,0 +1,4 @@
+---
+- import_tasks: setRoot.yml # 設置 Root 密碼登入 # 已完成 # 記得改 bastionIPPP 和 userrr
+- import_tasks: environmentSetup.yml # 環境配置及套件安裝 # 已完成
+- import_tasks: aboutCLI.yml # CLI 配置與檢查

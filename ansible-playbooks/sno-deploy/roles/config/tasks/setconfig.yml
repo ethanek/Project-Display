@@ -1,0 +1,53 @@
+- name: Read resolv.conf
+  command: cat /etc/resolv.conf
+  delegate_to: "{{bastion_ip}}"
+  register: resolv_conf_output
+  ignore_errors: yes
+
+- name: Extract content
+  set_fact:
+    nameserver_ip: "{{ (resolv_conf_output.stdout_lines | select('search', 'nameserver') | list) }}"
+  when: resolv_conf_output is succeeded
+
+- name: Set default values if not found
+  set_fact:
+    nameserver_ip: []
+  when: resolv_conf_output is failed
+
+- name: Check resolv.conf updating
+  set_fact:
+    update_required: "{{ nameserver_ip | length > 0 and (dnsIP not in nameserver_ip or (clusterName ~ '.' ~ baseDomain) not in nameserver_ip) }}"
+
+- name: Update resolv.conf
+  delegate_to: "{{bastion_ip}}"
+  block:
+    - name: Replace nameserver
+      lineinfile:
+        path: /etc/resolv.conf
+        regexp: '^nameserver.*'
+        line: "nameserver {{ dnsIP }}"
+      when: update_required
+
+    - name: Replace search
+      lineinfile:
+        path: /etc/resolv.conf
+        regexp: '^search.*'
+        line: "search api.{{ clusterName }}.{{ baseDomain }}"
+      when: update_required
+  when: resolv_conf_output is succeeded
+
+# 以上針對 resolv.conf
+
+- name: Remove old Openshift DomainName
+  lineinfile:
+    path: /etc/hosts
+    regexp: 'api\.\S+'
+    state: absent
+  delegate_to: "{{bastion_ip}}"
+
+- name: Add new Openshift DomainName
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ rendezvousIP }}    api.{{ clusterName }}.{{ baseDomain }}"
+    state: present
+  delegate_to: "{{bastion_ip}}"

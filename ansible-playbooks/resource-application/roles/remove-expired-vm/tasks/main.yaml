@@ -1,0 +1,26 @@
+---
+- name: Get Current Time
+  shell: |
+    date +%s
+  register: current_time
+
+- name: List VM Names
+  shell: |
+    bash ../../scripts/vm.sh ls
+  environment: 
+    PVE_TOKEN_ID: "{{ proxmox_token_id }}"
+    PVE_TOKEN_SECRET: "{{ proxmox_token_secret }}"
+    PVE_ENDPOINT: "{{ proxmox_provider_ip }}:8006"
+  register: vm_names
+
+- name: Print Names
+  shell: |
+    vm_name={{ item }}
+    current_date={{ current_time.stdout }}
+    vm_expired_date=$(echo $vm_name | grep -E '^[0-9]{10}' -o)
+    if [ "$vm_expired_date" != "" ] && [ $current_date -gt $vm_expired_date ]
+    then
+      echo $vm_name >> remove.txt
+      bash ../../scripts/vm.sh rm $vm_name
+    fi
+  with_items: "{{ vm_names.stdout_lines }}"

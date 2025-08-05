@@ -1,0 +1,7 @@
+- name: Run tasks from startk8.yml if CNI is "calico"
+  when: CNI == "calico"
+  import_tasks: calico.yml
+
+- name: Run tasks from cilium.yml if CNI is "cilium"
+  when: CNI == "cilium"
+  import_tasks: cilium.yml

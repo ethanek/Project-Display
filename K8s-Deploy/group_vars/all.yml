@@ -1,0 +1,8 @@
+arrayname:
+  - hostname: master
+    ip: "{{master_ip_address}}"
+    ansible_user: root
+
+  - hostname: worker
+    ip: "{{worker1_ip_address}}"
+    ansible_user: root

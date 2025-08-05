@@ -1,0 +1,73 @@
+- name: Set Expired Date
+  shell: |
+    OS="`uname`"
+    case $OS in
+      'Linux')
+        OS='Linux'
+        date -d @{{ expired_unix.stdout }}
+        ;;
+      'Darwin') 
+        OS='Mac'
+        gdate -d @{{ expired_unix.stdout }}
+        ;;
+      *)
+        echo 'Error'
+        ;;
+    esac
+  register: expired_date
+
+- name: Send application mail
+  environment:
+    AAP_HOST: "{{ aap_host }}"
+    AAP_USERNAME: "{{ aap_username }}"
+    AAP_PASSWORD: "{{ aap_password }}"
+  args:
+    executable: /bin/bash
+  shell: |
+    subject="Dynasafe-CNS Create VM Application ({{ name }})"
+    msg=$(cat <<EOF 
+      Hi, <br /> <br />
+      Your requested VM has been approved. <br />
+      Please take a look the VM details: <br /><br />
+
+      <table border=\"1\">
+      <tr>
+          <th>Name</th>
+          <th>Value</th>
+      </tr>
+      <tr>
+          <td>VM Name</td>
+          <td align=\"center\">{{ name }}</td>
+      </tr>
+      <tr>
+          <td>CPU Cores</td>
+          <td align=\"center\">{{ cpu_cores }}</td>
+      </tr>
+      <tr>
+          <td>Memory (GB)</td>
+          <td align=\"center\">{{ memory }}</td>
+      </tr>
+      <tr>
+          <td>IP Address</td>
+          <td align=\"center\">{{ vm_ip_addr.stdout }}</td>
+      </tr>
+      <tr>
+          <td>SSH Username</td>
+          <td align=\"center\">root</td>
+      </tr>
+      <tr>
+          <td>SSH Password</td>
+          <td align=\"center\">{{ vm_root_password }}</td>
+      </tr>
+      <tr>
+          <td>Expiration Date</td>
+          <td align=\"center\">{{ expired_date.stdout }}</td>
+      </tr>
+      </table>
+      <br />
+      If you have any questions, please contact the administrator.<br />
+      Thank You
+    EOF)
+
+    json_data=$(echo '{"to":"{{ applicant }}","subject":"'$subject'","body":"'$(echo $msg | tr '\n' ' ' | sed 's/\\n/\\\\n/g')'"}')
+    bash ../../scripts/aap.sh launch "{{ sending_mail_job_name }}" "$json_data"

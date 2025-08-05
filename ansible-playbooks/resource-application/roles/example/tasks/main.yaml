@@ -1,0 +1,9 @@
+---
+- name: Test example shell script
+  shell: |
+    pwd
+  register: example_output
+  
+- name: Print example code's output
+  ansible.builtin.debug: 
+    msg: "{{ example_output }}"

@@ -1,0 +1,13 @@
+- name: Output cluster hosts
+  template:
+    src: cluster-host.j2
+    dest: "/root/cluster-host.txt"
+  delegate_to: "{{bastion_ip}}"
+
+- name: Print cluster hosts
+  debug:
+    msg: "{{ lookup('template', 'roles/config/templates/cluster-host.j2') }}"
+
+- name: Delelte script
+  shell: rm -rf *.sh
+  delegate_to: "{{bastion_ip}}"

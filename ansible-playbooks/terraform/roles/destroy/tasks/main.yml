@@ -1,0 +1,6 @@
+---
+
+- name: destroy VM
+  shell: "cd /root/proxmox_terraform/clone_vm; terraform destroy -auto-approve"
+
+

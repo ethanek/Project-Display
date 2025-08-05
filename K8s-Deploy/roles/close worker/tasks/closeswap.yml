@@ -1,0 +1,5 @@
+- name: Disable swap and comment out swap entries in /etc/fstab
+  ansible.builtin.shell: "swapoff -a && sed '/ swap / s/^\\(.*\\)$/\\#\\1/' /etc/fstab > /tmp/fstab.tmp"
+  changed_when: true
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"

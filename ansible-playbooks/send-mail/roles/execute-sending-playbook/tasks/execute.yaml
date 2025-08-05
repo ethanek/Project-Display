@@ -1,0 +1,5 @@
+- name: Copy sending codes to /tmp
+  shell: |
+    ansible-playbook /tmp/{{ timestamp.stdout }}-send-mail/send-mail/main.yaml --extra-vars 'action=sending host=localhost to={{ to }} subject="{{ subject }}" body="{{ body }}"'
+
+    rm -rf /tmp/{{ timestamp.stdout }}-send-mail/send-mail/vaults

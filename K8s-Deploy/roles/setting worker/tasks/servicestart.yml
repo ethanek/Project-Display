@@ -1,0 +1,9 @@
+- name: Reload systemd
+  ansible.builtin.command: systemctl daemon-reload
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+  
+- name: Enable and start containerd service
+  ansible.builtin.command: systemctl enable --now containerd
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"

@@ -1,0 +1,9 @@
+- name: Update worker hostname
+  command: "hostnamectl set-hostname worker{{ y }}"
+  delegate_to: "{{ item }}"
+
+- name: Increment count for the next run
+  set_fact:
+    y: "{{ y | int + 1 }}"
+  run_once: true
+  register: increment_count

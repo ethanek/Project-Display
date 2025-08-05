@@ -1,0 +1,4 @@
+---
+- import_tasks: settinghosts.yml
+- import_tasks: closeswap.yml
+- import_tasks: closefirewall.yml

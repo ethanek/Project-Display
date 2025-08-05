@@ -1,0 +1,47 @@
+- name: Configure Kubernetes Repository
+  copy:
+    content: |
+      [kubernetes]
+      name=Kubernetes
+      baseurl=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://pkgs.k8s.io/core:/stable:/v1.29/rpm/repodata/repomd.xml.key
+    dest: /etc/yum.repos.d/kubernetes.repo
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Install kubelet
+  package:
+    name: kubelet
+    state: present
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Install kubeadm
+  package:
+    name: kubeadm
+    state: present
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Install kubectl
+  package:
+    name: kubectl
+    state: present
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Install iproute-tc
+  package:
+    name: iproute-tc
+    state: present
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Enable the kubelet service
+  systemd:
+    name: kubelet
+    enabled: yes
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"

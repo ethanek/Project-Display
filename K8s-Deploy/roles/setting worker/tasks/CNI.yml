@@ -1,0 +1,17 @@
+- name: Download CNI plugins archive
+  command: "curl -OL https://github.com/containernetworking/plugins/releases/download/v1.2.0/cni-plugins-linux-amd64-v1.2.0.tgz"
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Create directory for CNI plugins
+  file:
+    path: "/opt/cni/bin"
+    state: directory
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Extract CNI plugins archive
+  ansible.builtin.command:
+    cmd: "tar -C /opt/cni/bin -xzvf cni-plugins-linux-amd64-v1.2.0.tgz"
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"

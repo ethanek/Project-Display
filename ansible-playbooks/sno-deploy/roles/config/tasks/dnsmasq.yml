@@ -1,0 +1,40 @@
+- name: Add new folder
+  shell: mkdir ocp
+  delegate_to: "{{bastion_ip}}"
+
+- name: Split IP Address into octets
+  set_fact:
+    octets: "{{ rendezvousIP.split('.') }}"
+
+- name: Reverse the order of octets
+  set_fact:
+    reversed_octets: "{{ octets | reverse }}"
+
+- name: Join octets into reverse IP Address
+  set_fact:
+    ptrRecord: "{{ reversed_octets | join('.') }}"
+
+- name: Create dnsmasq.conf
+  template:
+    src: dnsmasq.conf.j2
+    dest: "{{ ocpFilePath }}/dnsmasq.conf"
+  delegate_to: "{{bastion_ip}}"
+
+- name: Check if dnsmasq.conf exists
+  stat:
+    path: /etc/dnsmasq.conf
+  delegate_to: "{{bastion_ip}}"
+  register: dnsFileCheck
+
+- name: Remove old file
+  shell: "rm -rf /etc/dnsmasq.conf"
+  delegate_to: "{{bastion_ip}}"
+  when: dnsFileCheck.stat.exists
+
+- name: Copy new file
+  shell: "cp ~/ocp/dnsmasq.conf /etc"
+  delegate_to: "{{bastion_ip}}"
+
+- name: Restart dnsmasq
+  shell: "sudo systemctl restart dnsmasq"
+  delegate_to: "{{bastion_ip}}"

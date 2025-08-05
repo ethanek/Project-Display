@@ -1,0 +1,29 @@
+- name: Create /root/token directory on worker
+  file:
+    path: /root/token
+    state: directory
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Ensure the target directory exists
+  ansible.builtin.file:
+    path: "/root/token"
+    state: directory
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Debug kubeadm_init_output
+  debug:
+    var: kubeadm_init_output
+
+- name: kubeadm token
+  command: "{{ kubeadm_init_output }}"
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Download Calico YAML file
+  get_url:
+    url: "https://docs.projectcalico.org/manifests/calico.yaml"
+    dest: "/tmp/calico.yaml"
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"

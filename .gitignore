@@ -1,0 +1,6 @@
+vars.tf
+ansible-vars
+.terraform*
+terraform.tfstate
+vars.yaml
+.DS_Store

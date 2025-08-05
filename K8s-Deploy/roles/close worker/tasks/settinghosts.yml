@@ -1,0 +1,5 @@
+- name: setting
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ inventory_hostname }} ansible_user=root"
+ 

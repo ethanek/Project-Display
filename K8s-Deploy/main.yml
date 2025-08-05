@@ -1,0 +1,59 @@
+---
+- name: vm setting
+  vars_files:
+    - roles/proxmox-check-clone-status/vars/vars.yml 
+
+  vars_prompt:
+  - name: input_worker_count
+    prompt: "Enter the number of workers"
+    private: no 
+
+  roles:
+    - { role: roles/proxmox-check-clone-status, worker_count: "{{ input_worker_count }}"} 
+  hosts: localhost 
+  tasks:
+    - name: Include roles dynamically close and setting for master
+      include_role:
+        name: "{{ item }}"
+      with_items:
+        - ['close', 'setting']
+
+    - name: Include roles dynamically close and setting for worker
+      include_role:
+        name: "{{ item }}"
+      with_items:
+        - ['close worker', 'setting worker']
+
+    - name: Set initial count
+      set_fact:
+        m: "{{ m | default(1) | int }}"
+      register: initial_count
+
+    - name: Include roles dynamically master hostname
+      include_role:
+        name: "master hostname" 
+      with_items: "{{ master_ip_addresses }}"  
+
+    - name: Set initial count
+      set_fact:
+        y: "{{ y | default(1) | int }}"
+      register: initial_count
+      
+    - name: Include roles dynamically worker hostname
+      include_role:
+        name: "worker hostname" 
+      with_items: "{{ worker_ip_addresses }}"  
+
+    - name: Include roles dynamically start
+      include_role:
+        name: "start" 
+
+    - name: Include roles dynamically join
+      include_role:
+        name: "join"
+
+    - name: Include roles dynamically get node
+      include_role:
+        name: "get-node"
+
+  

@@ -1,0 +1,7 @@
+---
+- hosts: ethan-lab
+
+  roles:
+    - { role: build }
+#    - { role: destroy }
+

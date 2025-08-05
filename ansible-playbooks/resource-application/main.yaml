@@ -1,0 +1,13 @@
+
+---
+- name: Apply Custom Resource
+  hosts: localhost
+  gather_facts: no
+  vars_files:
+    - vaults/proxmox.yaml
+    - vaults/aap.yaml
+    - vaults/vm.yaml
+  vars:
+    sending_mail_job_name: "Sending Mail"
+  roles:
+   - role: "{{ action }}"

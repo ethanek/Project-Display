@@ -1,0 +1,7 @@
+---
+- name: Send the mail
+  hosts: "{{ host }}"
+  vars_files:
+    - vaults/mail-password.yaml
+  roles:
+   - role: "{{ action }}"

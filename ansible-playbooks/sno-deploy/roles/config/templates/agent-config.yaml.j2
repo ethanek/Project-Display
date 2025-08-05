@@ -1,0 +1,34 @@
+apiVersion: v1alpha1
+kind: AgentConfig
+metadata:
+  name: {{clusterName}}
+rendezvousIP: {{rendezvousIP}}
+hosts: 
+  - hostname: {{masterHostname}}
+    interfaces:
+      - name: {{rhcosNIC}}
+        macAddress: {{master_mac}}
+    rootDeviceHints: 
+      deviceName: {{rhcosStorageDevice}}
+    networkConfig: 
+      interfaces:
+        - name: {{rhcosNIC}}
+          type: ethernet
+          state: up
+          mac-address: {{master_mac}}
+          ipv4:
+            enabled: true
+            address:
+              - ip: {{rendezvousIP}}
+                prefix-length: 24
+            dhcp: false
+      dns-resolver:
+        config:
+          server:
+            - {{dnsIP}}
+      routes:
+        config:
+          - destination: 0.0.0.0/0
+            next-hop-address: 192.168.50.1
+            next-hop-interface: {{rhcosNIC}}
+            table-id: 254

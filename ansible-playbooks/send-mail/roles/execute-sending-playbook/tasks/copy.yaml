@@ -1,0 +1,8 @@
+- name: Collect current timestamp
+  shell:  date +%s
+  register: timestamp
+
+- name: Copy sending codes to /tmp
+  copy:
+    src: "../../../send-mail"
+    dest: "/tmp/{{ timestamp.stdout }}-send-mail"

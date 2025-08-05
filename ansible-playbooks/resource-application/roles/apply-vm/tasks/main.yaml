@@ -1,0 +1,4 @@
+---
+- import_tasks: settings.yaml
+- import_tasks: terraform.yaml
+- import_tasks: send-mail.yaml

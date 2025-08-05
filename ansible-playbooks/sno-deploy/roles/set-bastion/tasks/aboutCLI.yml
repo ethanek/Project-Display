@@ -1,0 +1,58 @@
+- name: Create directory
+  file:
+    path: ~/cli
+    state: directory
+  delegate_to: "{{bastion_ip}}"
+
+- name: Download openshift-install
+  get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/{{ ocpVERSION }}/openshift-install-linux.tar.gz"
+    dest: "~/cli/openshift-install-linux.tar.gz"
+  delegate_to: "{{bastion_ip}}"
+
+- name: Download openshift-client
+  get_url:
+    url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/ocp/{{ ocpVERSION }}/openshift-client-linux.tar.gz"
+    dest: "~/cli/openshift-client-linux.tar.gz"
+  delegate_to: "{{bastion_ip}}"
+
+- name: Extract openshift-install-linux.tar.gz and openshift-client-linux.tar.gz
+  unarchive:
+    src: "~/cli/{{ item }}"
+    dest: "~/cli/"
+    remote_src: yes
+  loop:
+    - openshift-install-linux.tar.gz
+    - openshift-client-linux.tar.gz
+  delegate_to: "{{bastion_ip}}"
+
+- name: Copy kubectl, oc, and openshift-install to /usr/local/bin/
+  delegate_to: "{{bastion_ip}}"
+  copy:
+    src: "~/cli/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: '0755'
+    remote_src: yes
+  loop:
+    - kubectl
+    - oc
+    - openshift-install
+# 0523 修
+- name: Add /usr/local/bin/ to PATH
+  shell: "export PATH=$PATH:/usr/local/bin/"
+  delegate_to: "{{ bastion_ip }}"
+
+- name: Remove the cli directory
+  file:
+    path: ~/cli
+    state: absent
+  delegate_to: "{{bastion_ip}}"
+
+- name: Check CLI
+  shell: oc version
+  delegate_to: "{{bastion_ip}}"
+  register: checkCLI
+
+- name: Print CLI status
+  debug: 
+    msg: "{{checkCLI}}"

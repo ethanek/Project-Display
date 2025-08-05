@@ -1,0 +1,11 @@
+- name: Reload systemd configuration
+  ansible.builtin.command: systemctl daemon-reload
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Restart containerd
+  ansible.builtin.systemd:
+    name: containerd
+    state: restarted
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"

@@ -1,0 +1,15 @@
+- name: Download containerd archive
+  ansible.builtin.get_url:
+    url: "https://github.com/containerd/containerd/releases/download/v1.6.19/containerd-1.6.19-linux-amd64.tar.gz"
+    dest: /tmp/containerd-1.6.19-linux-amd64.tar.gz
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Extract containerd archive
+  ansible.builtin.unarchive:
+    src: /tmp/containerd-1.6.19-linux-amd64.tar.gz
+    dest: /usr/local
+    remote_src: yes
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+

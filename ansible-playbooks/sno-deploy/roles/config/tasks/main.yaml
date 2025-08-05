@@ -1,0 +1,7 @@
+---
+- import_tasks: dnsmasq.yml     
+- import_tasks: createISO.yml   
+- import_tasks: replaceISO.yml     
+- import_tasks: setconfig.yml  
+- import_tasks: agentInstall.yml
+- import_tasks: checkCluster.yml 

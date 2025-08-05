@@ -1,0 +1,29 @@
+- name: Create config files
+  delegate_to: "{{bastion_ip}}"
+  template:
+    src: "{{ config_name }}.yaml.j2"
+    dest: "{{ ocpFilePath }}/{{ config_name }}.yaml"
+  loop:
+    - install-config
+    - agent-config
+  vars:
+    config_name: "{{ item }}"  
+
+- name: Create config files2
+  delegate_to: "{{bastion_ip}}"
+  template:
+    src: "{{ config_name }}.yaml.j2"
+    dest: "~/{{ config_name }}.yaml"
+  loop:
+    - install-config
+    - agent-config
+  vars:
+    config_name: "{{ item }}" 
+
+- name: Convert ZIP Cluster
+  shell: "openshift-install agent create cluster-manifests --dir ocp"
+  delegate_to: "{{bastion_ip}}"
+
+- name: Convert Agent ISO
+  shell: "openshift-install --dir ocp agent create image"
+  delegate_to: "{{bastion_ip}}"

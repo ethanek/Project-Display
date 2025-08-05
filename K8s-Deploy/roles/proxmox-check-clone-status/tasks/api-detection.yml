@@ -1,0 +1,65 @@
+- name: Get token
+  shell: |
+    username=$(echo "{{ username }}" | base64 --decode)
+    password=$(echo "{{ password }}" | base64 --decode)
+    TOKEN=$(curl -k -d username=$username --data-urlencode password=$password https://{{ ip }}:8006/api2/json/access/ticket)
+    echo $TOKEN
+  environment:
+    IP: "{{ ip }}"
+    USERNAME: "{{ username }}"
+    PASSWORD: "{{ password }}"
+  register: get_token
+
+- name: Extract token
+  set_fact:
+    token: "{{ (get_token.stdout | from_json).data.ticket }}"
+
+- name: Generate a random number
+  set_fact:
+    wait_same: "{{ 60 | random(start=1) }}"
+
+- name: Wait at the same time
+  pause:
+    seconds: "{{ wait_same }}"
+
+
+- name: Check if there is a lock
+  shell: |
+    DATA=$(curl -k -b "PVEAuthCookie={{ token }}" https://{{ ip }}:8006/api2/json/nodes/proxmox2-2/qemu)
+    NAME="clone"
+    if echo $DATA | grep -q "$NAME"; then
+    echo "True"
+    else
+      echo "False"
+    fi
+  register: check_clone
+  until: check_clone.stdout == "False"
+  retries: 999
+  delay: 60
+
+- name: Print the output of check_clone
+  debug:
+    msg: '{{ check_clone.stdout_lines }}'
+
+- name: Check VM status
+  shell: |
+    DATA=$(curl -k -b "PVEAuthCookie=$(echo $TOKEN | jq -r '.data.ticket')" https://{{ ip }}:8006/api2/json/nodes/proxmox2-2/tasks)
+    JUDGE=$(echo "$DATA" | awk 'BEGIN{RS=",";ORS="\n"} {print $0}' | sort -k2 -t: -n -r | awk 'BEGIN{ORS=","} {print $0}')
+
+    if echo "$JUDGE" | grep -q "\"tokenid\":\"terraform-creater\""; then
+      if echo "$JUDGE" | grep -q "\"type\":\"qmconfig\""; then
+      echo "True"
+      else
+        echo "False"
+      fi
+    else
+      echo "True"
+    fi
+  register: check_VM
+  until: check_VM.stdout == "True"
+  retries: 10
+  delay: 10
+
+- name: Print the output of check_clone
+  debug:
+    msg: '{{ check_VM.stdout_lines }}'

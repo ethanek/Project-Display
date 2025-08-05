@@ -1,0 +1,5 @@
+{% for worker_number in range(worker_starting_index, worker_starting_index + worker_count) %}
+- hostname: "worker{{ worker_number }}"
+  ip: "{{ 'worker' ~ worker_number ~ '_ip_address' }}"
+  ansible_user: root
+{% endfor %}

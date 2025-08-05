@@ -1,0 +1,37 @@
+variable "provider_ip" {
+  default = "192.168.50.3"
+}
+
+variable "token_id" {
+  default = "root@pam!terraform-creater"
+}
+
+variable "token_secret" {
+  default = "70ca5574-16d5-4d61-89d9-c43d2ec7f686"
+}
+
+variable "proxmox_host" {
+  default = "proxmox2-2"
+}
+
+variable "template_name" {
+  default = "Rocky8.8-template"
+}
+
+variable "cpu_cores" {
+  type    = number
+  default = "{{ cpu_cores }}"
+}
+
+variable "memory" {
+  type    = number
+  default = "{{ memory }}"
+}
+
+variable "master" {
+  default = "{{ master }}"
+}
+
+variable "worker" {
+  default = "{{ worker }}"
+}

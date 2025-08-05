@@ -1,0 +1,16 @@
+- name: Generate script
+  template:
+    src: rootConfiguration.j2
+    dest: "{{ filepath }}/{{folderpath}}/script.sh"
+
+- name: Transmit script
+  shell: "scp {{ filepath }}/{{folderpath}}/script.sh {{userlogin}}@{{bastion_ip}}:." 
+
+- name: Move script
+  shell: ssh "{{userlogin}}@{{ bastion_ip }}" sudo mv /home/"{{userlogin}}"/script.sh  /root/
+
+- name: Run script
+  shell: ssh "{{userlogin}}@{{ bastion_ip }}" sudo -i bash script.sh
+
+- name: copy ssh-key
+  shell: ssh "{{userlogin}}@{{ bastion_ip }}" sudo cp /home/"{{userlogin}}"/.ssh/authorized_keys /root/.ssh

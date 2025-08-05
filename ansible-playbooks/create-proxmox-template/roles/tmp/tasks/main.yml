@@ -1,0 +1,36 @@
+- name: Set Template ID and Image version
+  set_fact:
+    vm_version: >-
+      {% if vm_version.startswith('8') %}
+      "Rocky-8-GenericCloud.latest.x86_64.qcow2"
+      {% elif vm_version.startswith('9') %}
+      "Rocky-9-GenericCloud.latest.x86_64.qcow2"
+      {% else %}
+      "Unknown qcow2 file"
+      {% endif %}
+    vm_name: >-
+      {% if vm_version.startswith('8') %}
+      "Rocky8-Template"
+      {% elif vm_version.startswith('9') %}
+      "Rocky9-Template"
+      {% endif %}
+
+- name: Parameter settings
+  replace:
+    path: /root/proxmox_terraform/shell_script/tmp.sh
+    regexp: 'create_template .*'
+    replace: 'create_template {{ vm_id }} {{ vm_name }} {{ vm_version }}'
+  delegate_to: ethan-lab
+
+- name: create file
+  shell: echo "{{public_key}}" > keyfile
+
+- name: Run the script
+  script: tmp.sh
+  environment:
+    ssh_keyfile: "{{ file_path }}"
+
+- name: Remove key file
+  file:
+    path: "{{file_path}}"
+    state: absent

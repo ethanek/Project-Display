@@ -1,0 +1,12 @@
+- name: Generate containerd config
+  ansible.builtin.shell: |
+    mkdir -p /etc/containerd
+    containerd config default > /etc/containerd/onfig.toml
+  register: result
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+  
+- debug:
+    var: result
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"

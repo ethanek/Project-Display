@@ -1,0 +1,22 @@
+---
+- name: Generate Terraform variables file
+  template:
+    src: roles/apply-vm/templates/vars.tf.j2
+    dest: vars.tf
+  delegate_to: localhost
+  become: no
+
+- name: Initialize Terraform
+  command: terraform init
+  delegate_to: localhost
+  become: no
+
+- name: Apply Terraform changes
+  command: terraform apply -auto-approve
+  delegate_to: localhost
+  become: no
+
+- name: Get VM's IP Address
+  shell: |
+    cat ip.txt
+  register: vm_ip_addr

@@ -1,0 +1,38 @@
+---
+- name: Set Expired Date
+  shell: |
+    OS="`uname`"
+    case $OS in
+      'Linux')
+        OS='Linux'
+        date -d "+{{ days }} days" +%s
+        ;;
+      'Darwin') 
+        OS='Mac'
+        gdate -d "+{{ days }} days" +%s
+        ;;
+      *)
+        echo '9999999999'
+        ;;
+    esac
+  register: expired_unix
+
+- name: Set the VM's Name
+  shell: |
+    echo "{{ expired_unix.stdout }}-{{ name }}"
+  register: vm_name
+
+- name: Set the VM's CPU Core
+  shell: |
+    echo {{ cpu_cores }}
+  register: vm_cpu_cores
+
+- name: Set the VM's Memory
+  shell: |
+    echo $(({{ memory }} * 1024))
+  register: vm_memory
+
+- name: Print the gateway for each host when defined
+  ansible.builtin.debug:
+    msg: |
+      {{ vm_memory }}

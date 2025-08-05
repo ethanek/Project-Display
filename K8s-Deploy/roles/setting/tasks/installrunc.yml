@@ -1,0 +1,7 @@
+- name: Download runc binary
+  get_url:
+    url: https://github.com/opencontainers/runc/releases/download/v1.1.4/runc.amd64
+    dest: /usr/local/bin/runc
+    mode: '0755'
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"

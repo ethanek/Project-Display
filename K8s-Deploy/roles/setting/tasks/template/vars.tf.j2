@@ -1,0 +1,34 @@
+variable "proxmox_host" {
+  default = "{{ proxmox_host }}"
+}
+
+variable "template_name" {
+  default = "{{ template_name }}"
+}
+
+variable "provider_ip" {
+  default = "{{ proxmox_provider_ip }}"
+}
+
+variable "token_id" {
+  default = "{{ proxmox_token_id }}"
+}
+
+variable "token_secret" {
+  default = "{{ proxmox_token_secret }}"
+}
+
+variable "vm_name" {
+  type    = string
+  default = "{{ vm_name.stdout }}"
+}
+
+variable "cpu_cores" {
+  type    = number
+  default = "{{ vm_cpu_cores.stdout }}"
+}
+
+variable "memory" {
+  type    = number
+  default = "{{ vm_memory.stdout }}"
+}

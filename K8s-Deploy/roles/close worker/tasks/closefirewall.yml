@@ -1,0 +1,7 @@
+- name: Disable and stop firewalld
+  ansible.builtin.systemd:
+    name: firewalld
+    enabled: no
+    state: stopped
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"

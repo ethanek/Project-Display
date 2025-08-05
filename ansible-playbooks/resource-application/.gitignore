@@ -1,0 +1,5 @@
+vars.tf
+.terraform*
+terraform.tfstate
+vars.yaml
+ip.txt

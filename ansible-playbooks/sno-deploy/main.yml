@@ -1,0 +1,8 @@
+---
+- hosts: "{{terraform}}"
+  gather_facts: no
+  
+  roles:
+    - { role: create-vm } 
+    - { role: set-bastion}  
+    - { role: config } 

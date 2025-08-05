@@ -1,0 +1,9 @@
+output "master_ip" {
+  value = "${proxmox_vm_qemu.cluster-host[0].default_ipv4_address}"
+}
+output "master_mac" {
+  value = "${proxmox_vm_qemu.cluster-host[0].network[0].macaddr}"
+}
+output "bastion_ip" {
+  value = "${proxmox_vm_qemu.bastion-host[0].default_ipv4_address}"
+}

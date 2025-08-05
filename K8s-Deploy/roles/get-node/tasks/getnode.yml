@@ -1,0 +1,14 @@
+- name: Wait for 3 minutes before executing kubectl
+  wait_for:
+    timeout: 180  
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Execute kubectl get node
+  command: kubectl get node
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Display kubectl result
+  debug:
+    var: kubectl_result.stdout_lines

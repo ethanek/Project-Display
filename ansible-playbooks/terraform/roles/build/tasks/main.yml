@@ -1,0 +1,45 @@
+---
+
+- name: Check .terraform exist
+  stat:
+    path: /root/proxmox_terraform/clone_vm/.terraform
+  register: terraform_directory
+
+- name: terraform init
+  shell: "cd /root/proxmox_terraform/clone_vm; terraform init"
+  when: not terraform_directory.stat.exists
+
+- name: terraform apply
+  shell: "cd /root/proxmox_terraform/clone_vm; terraform apply -auto-approve"
+  register: result
+
+- name: Get IP
+  set_fact:
+    ip_address: "{{ result.stdout | regex_search('(?<=staticIp = \")\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?=\")', multiline=False) }}"
+
+- name: Print IP
+  debug:
+    msg: "{{ ip_address }}"
+
+- name: Wait VM started
+  wait_for:
+    host: "{{ ip_address }}"
+    port: 22                          # SSH 端口
+    timeout: 900                      # 等待時間 15 分鐘（單位：秒）
+  register: ip_check_result
+  retries: 30                         # 重試次數
+  delay: 30                           # 重試間隔（秒）
+
+- name: Check SSH connection results
+  debug:
+    var: ip_check_result
+
+- name: Echo sign in successfully
+  shell: echo 'sign in successfully'
+  delegate_to: "{{ ip_address }}"
+  register: echo
+  when: ip_check_result.state == "started"
+
+- name: Print Echo
+  debug:
+    msg: "{{ echo.stdout }}"

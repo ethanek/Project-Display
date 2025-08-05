@@ -1,0 +1,11 @@
+---
+- hosts: localhost
+  gather_facts: no
+
+  vars_files:
+    - roles/proxmox-check-clone-status/vars/vars.yml
+  
+  roles:
+    - { role: proxmox-check-clone-status }
+  
+

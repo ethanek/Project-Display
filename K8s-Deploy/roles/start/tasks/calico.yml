@@ -1,0 +1,75 @@
+- name: Initialize Kubernetes Master
+  command: kubeadm init --pod-network-cidr=192.167.0.0/16 
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item}}"
+
+- name: kubeadm token create
+  command: kubeadm token create --print-join-command
+  register: kubeadm_init_output_temp
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Set global variable kubeadm_init_output
+  set_fact:
+    kubeadm_init_output: "{{ kubeadm_init_output_temp.results | map(attribute='stdout') | first }}"
+
+- name: Debug information for master
+  debug:
+    msg: "This is the master"
+
+- name: Execute the command on the master host
+  shell:
+    cmd: "cd /etc/kubernetes/ && mkdir -p ~/.kube && cp admin.conf ~/.kube/config"
+  become_user: root
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+  
+- name: Apply tigera-operator.yaml
+  ansible.builtin.shell:
+    cmd: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.3/manifests/tigera-operator.yaml
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Copy DownloadCalico.yml and metrics-server.yml to remote machine
+  ansible.builtin.copy:
+    src: "template/DownloadCalico.yml"
+    dest: "/root/DownloadCalico.yml"
+  delegate_to: "{{ item }}"
+  with_items: "{{ master_ip_addresses }}"
+
+- name: Apply calico.yaml
+  ansible.builtin.shell:
+    cmd: kubectl apply -f /root/DownloadCalico.yml
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Taint all nodes to remove control-plane taint
+  ansible.builtin.command: kubectl taint nodes --all node-role.kubernetes.io/control-plane- 
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Copy metrics-server.yml to remote machine
+  ansible.builtin.copy:
+    src: "template/metrics-server.yml"
+    dest: "/root/metrics-server.yml"
+  delegate_to: "{{ item }}"
+  with_items: "{{ master_ip_addresses }}"
+
+- name: Apply metrics-server.yaml using kubectl
+  ansible.builtin.shell:
+    cmd: kubectl apply -f /root/metrics-server.yml
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Copy the template file with template
+  template:
+     src: template/alias.j2     
+     dest: /root/.bashrc
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Source ~/.bashrc on remote host
+  ansible.builtin.shell:
+    cmd: source /root/.bashrc
+  with_items: "{{ master_ip_addresses }}"
+  delegate_to: "{{ item }}"

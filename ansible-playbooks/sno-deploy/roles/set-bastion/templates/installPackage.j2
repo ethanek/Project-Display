@@ -1,0 +1,8 @@
+#!/bin/bash
+# Deleting mismatched RPM database versions
+rm -f /var/lib/rpm/__db*
+
+# Rebuilding RPM database
+rpm --rebuilddb
+
+sudo dnf install --nogpgcheck nmstate chrony dnsmasq -y

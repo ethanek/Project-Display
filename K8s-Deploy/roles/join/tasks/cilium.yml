@@ -1,0 +1,41 @@
+- name: Create /root/token directory on worker
+  file:
+    path: /root/token
+    state: directory
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Ensure the target directory exists
+  ansible.builtin.file:
+    path: "/root/token"
+    state: directory
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Debug kubeadm_init_output
+  debug:
+    var: kubeadm_init_output
+
+- name: kubeadm token
+  command: "{{ kubeadm_init_output }}"
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Download Helm installation script
+  get_url:
+    url: https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+    dest: /tmp/get-helm-3
+    mode: "u+x"
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Install Helm
+  command: /tmp/get-helm-3
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"
+
+- name: Add Cilium Helm repository
+  ansible.builtin.command:
+    cmd: helm repo add cilium https://helm.cilium.io/
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"

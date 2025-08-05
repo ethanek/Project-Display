@@ -1,0 +1,33 @@
+# usage:
+#    ansible-playbook ansible-playbooks/resource-application/main.yaml --extra-vars "action=remove-vm specify_remove_vm_name=1697248239-rex-lab"
+---
+- name: Remove Specify VM
+  environment: 
+    PVE_TOKEN_ID: "{{ proxmox_token_id }}"
+    PVE_TOKEN_SECRET: "{{ proxmox_token_secret }}"
+    PVE_ENDPOINT: "{{ proxmox_provider_ip }}:8006"
+  shell: |
+    for vm_name in $(bash ../../scripts/vm.sh ls | grep -E '[0-9]{10}-{{ specify_remove_vm_name }}')
+    do
+        bash ../../scripts/vm.sh rm $vm_name
+    done
+
+- name: Send application mail
+  environment:
+    AAP_HOST: "{{ aap_host }}"
+    AAP_USERNAME: "{{ aap_username }}"
+    AAP_PASSWORD: "{{ aap_password }}"
+  args:
+    executable: /bin/bash
+  shell: |
+    subject="Dynasafe-CNS Destroy VM Application ({{ specify_remove_vm_name }})"
+    msg=$(cat <<EOF 
+      Hi, <br /> <br />
+      The VM you requested ( {{ specify_remove_vm_name }} ) has been successfully deleted. <br /><br />
+
+      If you have any questions, please contact the administrator.<br />
+      Thank You
+    EOF)
+
+    json_data=$(echo '{"to":"{{ applicant }}","subject":"'$subject'","body":"'$(echo $msg | tr '\n' ' ' | sed 's/\\n/\\\\n/g')'"}')
+    bash ../../scripts/aap.sh launch "{{ sending_mail_job_name }}" "$json_data"

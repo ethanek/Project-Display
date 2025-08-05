@@ -1,0 +1,49 @@
+- name: Generate install script (nmstate & chronyd & dnsmasq)
+  template:
+    src: installPackage.j2
+    dest: "/root/installScript.sh"
+  delegate_to: "{{bastion_ip}}"
+
+- name: Run installPackage
+  shell: "bash installScript.sh"
+  delegate_to: "{{bastion_ip}}"
+
+- name: Start chronyd service
+  shell: sudo systemctl start chronyd && sudo systemctl enable chronyd
+  delegate_to: "{{bastion_ip}}"
+
+- name: Set timezone to Asia/Taipei
+  timezone:
+    name: Asia/Taipei
+  become: true
+  delegate_to: "{{bastion_ip}}"
+
+- name: Add KUBECONFIG to .bashrc
+  lineinfile:
+    path: ~/.bashrc
+    line: 'export KUBECONFIG=ocp/auth/kubeconfig'
+    state: present
+  delegate_to: "{{bastion_ip}}"
+
+- name: Ensure PATH is not overwritten
+  lineinfile:
+    path: ~/.bashrc
+    line: 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH'
+    state: present
+  delegate_to: "{{bastion_ip}}"
+
+- name: Create SSH
+  shell: |
+    ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519
+    eval "$(ssh-agent -s)"
+    ssh-add ~/.ssh/id_ed25519
+  delegate_to: "{{bastion_ip}}"
+
+- name: Get public key
+  shell: cat ~/.ssh/id_ed25519.pub
+  delegate_to: "{{bastion_ip}}"
+  register: ssh_key
+  
+- name: Filter ssh key
+  set_fact:
+    bastionSSH: "{{ ssh_key.stdout }}"

@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Modify the 'PasswordAuthentication' to 'yes' in /etc/ssh/sshd_config
+sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+
+# Restart the sshd service
+sudo systemctl restart sshd
+
+# Set password and skip second confirmation
+echo 'root:{{rootLogin}}' | chpasswd
+
+exit
+
+echo Execution completed

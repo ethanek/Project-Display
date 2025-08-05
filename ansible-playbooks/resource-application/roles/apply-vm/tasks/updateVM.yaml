@@ -1,0 +1,13 @@
+- name: Update VM Expiration
+  hosts: localhost
+  gather_facts: no
+
+  tasks:
+    - name: Update VM Expiration
+      shell: /root/scripts/vm.sh updateVM "{{ vm_name }}" "{{ days_to_extend }}"
+      args:
+        executable: /bin/bash
+      register: result
+
+    - debug:
+        var: result.stdout_lines

@@ -1,0 +1,13 @@
+user=root
+port= 53
+expand-hosts
+log-queries
+log-facility=-
+local=/{{baseDomain}}/
+domain={{baseDomain}}
+address=/apps.{{clusterName}}.{{baseDomain}}/{{rendezvousIP}}
+address=/api.{{clusterName}}.{{baseDomain}}/{{rendezvousIP}}
+address=/api-int.{{clusterName}}.{{baseDomain}}/{{rendezvousIP}}
+address=/{{masterHostname}}.{{clusterName}}.{{baseDomain}}/{{rendezvousIP}}
+ptr-record={{ptrRecord}}.in-addr.arpa,{{masterHostname}}.{{clusterName}}.{{baseDomain}}
+rev-server=192.168.50.0/24,127.0.0.1

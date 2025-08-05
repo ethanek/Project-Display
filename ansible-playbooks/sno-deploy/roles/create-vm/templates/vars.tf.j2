@@ -1,0 +1,39 @@
+variable "provider_ip" {
+  default = "{{provider_ip}}"
+}
+
+variable "token_id" {
+  default = "{{token_id}}"
+}
+
+variable "token_secret" {
+  default = "{{token_secret}}"
+}
+
+variable "proxmox_node" {
+  default = "{{proxmox_node}}"
+}
+
+variable "bastion_using_template" {
+  default = "Rocky8-Template"
+}
+
+variable "sno_using_template" {
+  default = "rhcos-live-template"
+}
+
+variable "cpu_cores" {
+  default = "8"
+}
+
+variable "memory" {
+  default = "16384"
+}
+
+variable "disk_size" {
+  default = "120G"
+}
+
+variable "public_key" {
+  default = "{{ethan_public_key}}"
+}

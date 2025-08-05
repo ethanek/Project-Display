@@ -1,0 +1,16 @@
+
+    - name: Update VM Expiration
+      shell: |
+        bash ../../scripts/vm.sh updateVM "{{ vm_name }}" "{{ days_to_extend }}"
+      args:
+        executable: /bin/bash
+      environment: 
+        PVE_TOKEN_ID: "{{ proxmox_token_id }}"
+        PVE_TOKEN_SECRET: "{{ proxmox_token_secret }}"
+        PVE_ENDPOINT: "{{ proxmox_provider_ip }}:8006"
+      register: result
+
+    - debug:
+        var: result.stdout_lines
+
+

@@ -1,0 +1,72 @@
+- name: Set chronyc
+  shell: sudo chronyc -a makestep
+  delegate_to: "{{bastion_ip}}"
+
+- name: Installation status monitoring
+  shell: openshift-install --dir=ocp agent wait-for bootstrap-complete
+  delegate_to: "{{bastion_ip}}"
+  register: monitoringStatus
+
+- name: Set KUBECONFIG
+  shell: export KUBECONFIG=~/ocp/auth/kubeconfig
+  delegate_to: "{{bastion_ip}}"
+
+- name: Check node status
+  shell: "oc get nodes | grep {{masterHostname}} | awk '{print $2}'"
+  delegate_to: "{{bastion_ip}}"
+  register: node_status
+  ignore_errors: true
+  until:
+    - "'Ready' in node_status.stdout"
+    - "'NotReady' not in node_status.stdout"
+  retries: 999
+  delay: 10
+
+- name: Check machine-config status
+  shell: "oc get pod -n openshift-machine-config-operator"
+  delegate_to: "{{bastion_ip}}"
+  register: mcpod_status
+  ignore_errors: true
+  until:
+    - "'1/1' in mcpod_status.stdout and 'Running' in mcpod_status.stdout_lines[1]"
+    - "'2/2' in mcpod_status.stdout and 'Running' in mcpod_status.stdout_lines[1]"
+  retries: 999
+  delay: 10
+
+- name: Check pod openshift-oauth-apiserver status
+  shell: "oc get pod -n openshift-oauth-apiserver"
+  delegate_to: "{{bastion_ip}}"
+  register: pod_status
+  ignore_errors: true
+  until:
+    - "'1/1' in pod_status.stdout and 'Running' in pod_status.stdout_lines[1]"
+  retries: 999
+  delay: 10
+
+- name: Cluster initialization
+  shell: openshift-install --dir=ocp wait-for install-complete
+  delegate_to: "{{bastion_ip}}"
+  register: cluster_status
+
+- name: Find specific lines in stderr_lines
+  set_fact:
+    specific_lines: "{{ specific_lines | default([]) + [item] }}"
+  loop: "{{ cluster_status.stderr_lines }}"
+  when: "'level=info msg=Access the OpenShift web-console here:' in item or 'level=info msg=Login to the console with user:' in item"
+
+
+- name: Extract console URL, user and password
+  set_fact:
+    console_url: "{{ item.split(' ')[-1] if 'Access the OpenShift web-console here:' in item else console_url | default('') }}"
+    username: "{{ item | regex_search('user: \"(.*?)\"', '\\1') | first if 'Login to the console with user:' in item else username | default('') }}"
+    password: "{{ item.split(' ')[-1].replace('\"', '') if 'Login to the console with user:' in item else password | default('') }}"
+  loop: "{{ specific_lines }}"
+
+- name: Write to file
+  copy:
+    content: |
+      Console URL: {{ console_url }}
+      Username: {{ username }}
+      Password: {{ password }}
+    dest: /root/OCP-Data.txt
+  delegate_to: "{{bastion_ip}}"

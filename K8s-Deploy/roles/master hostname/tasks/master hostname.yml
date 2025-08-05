@@ -1,0 +1,10 @@
+- name: Update master hostname
+  command: "hostnamectl set-hostname master{{ m }}"
+  delegate_to: "{{ item }}"
+
+- name: Increment count for the next run
+  set_fact:
+    m: "{{ m | int + 1 }}"
+  run_once: true
+  register: increment_count
+

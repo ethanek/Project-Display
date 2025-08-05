@@ -1,0 +1,56 @@
+- name: Check old ISO
+  stat:
+    path: /var/lib/vz/template/iso/agent.x86_64.iso
+  delegate_to: "{{ proxmoxNode }}"
+  register: checkISO
+
+- name: Remove old ISO
+  shell: "rm -rf /var/lib/vz/template/iso/agent.x86_64.iso"
+  delegate_to: "{{ proxmoxNode }}"
+  when: checkISO.stat.exists
+
+- name: Copy ISO
+  shell: "scp root@{{bastion_ip}}:/root/ocp/agent.x86_64.iso /root/{{filepath}}/{{folderpath}}"
+
+- name: Transmit ISO
+  shell: "scp /root/{{filepath}}/{{folderpath}}/agent.x86_64.iso {{ proxmoxNodeIP }}:/var/lib/vz/template/iso/"
+
+- name: Get rhcos vm information
+  shell: "qm list | grep '{{ masterHostname }}'-sno-master"
+  delegate_to: "{{ proxmoxNode }}"
+  register: checkRhcosVm
+  ignore_errors: yes
+
+- name: Get VMID & STATUS
+  set_fact:
+    vmid: "{{ checkRhcosVm.stdout_lines[0].split()[0] }}"
+    status: "{{ checkRhcosVm.stdout_lines[0].split()[2] }}"
+  when: checkRhcosVm.stdout_lines | length > 0
+
+- name: Check VM status is running
+  shell: qm shutdown {{ vmid }}
+  delegate_to: "{{ proxmoxNode }}"
+  when: status == "running"
+
+- name: Replace ISO
+  shell: qm set {{ vmid }} -cdrom /var/lib/vz/template/iso/agent.x86_64.iso
+  delegate_to: "{{ proxmoxNode }}"
+
+- name: Start rhcos VM
+  shell: qm start {{ vmid }}
+  delegate_to: "{{ proxmoxNode }}"
+
+- name: Attempt SSH connection to remote VM
+  wait_for:
+    host: "{{ rendezvousIP }}"
+    port: 22
+    delay: 60
+    timeout: 999
+    state: started
+  register: ssh_connection
+  retries: 999
+  delay: 10
+  until: ssh_connection.state == "started"
+
+- name: Ping master node
+  command: ping -c 4 {{ rendezvousIP }}

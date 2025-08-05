@@ -1,0 +1,5 @@
+- name: service download
+  ansible.builtin.command: 
+   curl -o /usr/lib/systemd/system/containerd.service https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+  with_items: "{{ worker_ip_addresses }}"
+  delegate_to: "{{ item }}"

@@ -1,0 +1,16 @@
+---
+- hosts: proxmox2-2
+  gather_facts: no
+
+  vars_files:
+    - vaults/keyfile.yml
+
+  vars_prompt:
+    - name: "vm_id"
+      prompt: "輸入ID (900~999)"
+    - name: "vm_version"
+      prompt: "輸入Rocky版本(8 or 9)"
+
+
+  roles:
+    - { role: tmp }

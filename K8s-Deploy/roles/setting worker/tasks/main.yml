@@ -1,0 +1,14 @@
+---
+- import_tasks: installCRI.yml
+- import_tasks: config.yml
+- import_tasks: copy_config.toml.yml
+- import_tasks: servicedownload.yml
+- import_tasks: servicestart.yml
+- import_tasks: installrunc.yml
+- import_tasks: CNI.yml
+- import_tasks: K8modules.yml
+- import_tasks: restartcontainerd.yml
+- import_tasks: installkubelet.yml
+#- import_tasks: installCNI.yml
+# - import_tasks: token.yml
+# - import_tasks: cp_token.yml
